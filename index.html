@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Break Schedule</title>
+  <style>
+      body {
+        background: #181c22;
+        color: #f3f3f3;
+        min-height: 100vh;
+        margin: 0;
+        font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+      }
+      /* Lighter textboxes for all input/textarea fields */
+      input[type="text"], input[type="number"], input[type="password"], textarea {
+        background: #2d3542 !important;
+        color: #fff !important;
+        border: 2px solid #00c6ff;
+        border-top: 4px solid #00c6ff;
+        border-radius: 8px;
+        padding: 0.5em 1em;
+        font-size: 1em;
+        transition: background 0.2s, border 0.2s;
+      }
+      input[type="text"]:focus, input[type="number"]:focus, input[type="password"]:focus, textarea:focus {
+        background: #3a4252 !important;
+        outline: none;
+        border-color: #00c6ff;
+      }
+    .header {
+      width: 100%;
+      background: #23272f;
+      padding: 1.5rem 2rem 1rem 2rem;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #222a;
+    }
+    .title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #00c6ff;
+      letter-spacing: 1px;
+      margin: 0;
+    }
+    .tabs {
+      display: flex;
+      gap: 1.5rem;
+      margin: 2.5rem 0 1.5rem 0;
+      justify-content: center;
+    }
+    .tab {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #b0b8c1;
+      background: none;
+      border: none;
+      outline: none;
+      padding: 0.7em 2.2em;
+      border-radius: 2em 2em 0 0;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      position: relative;
+    }
+    .tab.active, .tab:hover {
+      color: #00c6ff;
+      background: #23272f;
+      box-shadow: 0 4px 0 0 #00c6ff inset;
+    }
+    .tab-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: #23272f;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px 0 #00000040;
+      padding: 2.5em 2em;
+      min-height: 350px;
+      margin-bottom: 2em;
+      animation: fadeIn 0.7s cubic-bezier(.39,.575,.56,1.000) both;
+    }
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(-30px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 700px) {
+      .tab-content { padding: 1.2em 0.5em; }
+      .tabs { gap: 0.5rem; }
+      .header { flex-direction: column; align-items: flex-start; }
+      .title { font-size: 1.3rem; }
+    }
+    /* Center the dual service slots 1-5 for TNT and FedEx on index page */
+    .dual-service-slots-index {
+      display: flex;
+      justify-content: center;
+      gap: 2.5em;
+      margin: 2em 0 1.5em 0;
+      flex-wrap: wrap;
+    }
+    .dual-service-slots-index > div {
+      max-width: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">New Break Schedule</div>
+  <button id="admin-btn" style="background:#00c6ff;color:#181c22;padding:0.5em 1.5em;border-radius:10px;text-decoration:none;font-weight:600;font-size:1em;transition:background 0.2s, color 0.2s;cursor:pointer;">Admin</button>
+  <!-- Admin password popup -->
+  <div id="admin-popup-bg" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000a;z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#23272f;padding:2em 2em 1.5em 2em;border-radius:16px;box-shadow:0 8px 32px 0 #00000040;min-width:320px;max-width:90vw;">
+      <h3 style="color:#00c6ff;margin-top:0;">Admin Login</h3>
+      <input type="password" id="admin-popup-password" placeholder="Password" style="padding:0.5em 1em; border-radius:8px; border:none; font-size:1.1em; margin-bottom:1em; width:90%;"><br>
+      <button id="admin-popup-login" style="background:#00c6ff;color:#181c22;padding:0.5em 1.5em;border-radius:10px;font-weight:600;font-size:1em;cursor:pointer;">Login</button>
+      <button id="admin-popup-cancel" style="background:#888;color:#fff;padding:0.5em 1.5em;border-radius:10px;font-weight:600;font-size:1em;cursor:pointer;margin-left:1em;">Cancel</button>
+      <div id="admin-popup-error" style="color:#ff4d4d; margin-top:1em; display:none;">Incorrect password. Try again.</div>
+    </div>
+  <!-- removed admin notes box from header -->
+  </div>
+  </div>
+  <div class="tabs">
+  <button class="tab active" id="tab-voice">Voice</button>
+  <button class="tab" id="tab-chat">Chat</button>
+  </div>
+  <div class="tab-content" id="content-voice">
+    <h2 style="margin-top:0; color:#00c6ff;">Voice Slots</h2>
+  <!-- Admin Notes Display Box -->
+  <div id="admin-notes-display" style="max-width:900px;width:100%;margin:1.2em auto 1.5em auto;background:#ffb347;border:2px solid #e67c00;border-radius:18px;color:#222;font-size:1.1em;font-weight:600;text-align:center;padding:0.7em 1.2em;box-shadow:0 2px 8px #0003;word-break:break-word;min-height:2.2em;display:flex;align-items:center;justify-content:center;"></div>
+    <div style="background:#23272f; border-radius:18px; box-shadow:0 8px 32px 0 #00000040; padding:1.5em 1em 1.2em 1em; margin-bottom:2em; max-width:900px; margin-left:auto; margin-right:auto;">
+      <div style="background:#23272f; border:2px solid #00c6ff; border-radius:18px; padding:1.2em 1em 0.7em 1em; margin-bottom:1.5em; box-shadow:0 2px 8px #0003; text-align:center;">
+        <h3 style="color:#00c6ff; margin:0 0 1em 0; text-align:center; font-size:1.5em; font-weight:700; letter-spacing:0.5px;">Available Slots by Time</h3>
+        <div style="height:2px; background:#00c6ff; border-radius:2px; margin:0 0 1.2em 0;"></div>
+        <div style="display:flex; gap:2em; justify-content:center; text-align:center;">
+      <div style="display:flex; gap:2em; justify-content:center;">
+        <!-- TNT Column -->
+        <div style="flex:1; min-width:200px; background:#22242a; border-radius:16px; padding:1em;">
+          <h4 style="color:#ffb347; margin:0 0 0.7em 0; text-align:center; font-size:1.1em; font-weight:600; letter-spacing:0.2px; display:flex; align-items:center; justify-content:center;">TNT</h4>
+          <table style="width:100%; border-collapse:separate; border-spacing:0; border-radius:12px; overflow:hidden;">
+            <thead>
+              <tr style="background:#23272f; color:#fff;">
+                <th style="padding:0.5em 1em;text-align:center;">Time CET</th>
+                <th style="padding:0.5em 1em;text-align:center;">Slots</th>
+              </tr>
+            </thead>
+            <tbody id="tnt-time-slots-body">
+              <!-- Rows generated by JS -->
+            </tbody>
+          </table>
+        </div>
+        <!-- FedEx Column -->
+        <div style="flex:1; min-width:200px; background:#22242a; border-radius:16px; padding:1em;">
+          <h4 style="color:#6c2eb6; margin:0 0 0.7em 0; text-align:center; font-size:1.1em; font-weight:600; letter-spacing:0.2px; display:flex; align-items:center; justify-content:center;">FedEx</h4>
+          <table style="width:100%; border-collapse:separate; border-spacing:0; border-radius:12px; overflow:hidden;">
+            <thead>
+              <tr style="background:#23272f; color:#fff;">
+                <th style="padding:0.5em 1em;text-align:center;">Time CET</th>
+                <th style="padding:0.5em 1em;text-align:center;">Slots</th>
+              </tr>
+            </thead>
+            <tbody id="fdx-time-slots-body">
+              <!-- Rows generated by JS -->
+            </tbody>
+          </table>
+        </div>
+        </div>
+      </div>
+      </div>
+    </div>
+
+
+  <div class="dual-service-slots-index">
+      <!-- TNT Column -->
+      <div style="flex:1; min-width:340px; background:#23272f; border-radius:20px; padding:1.2em; box-shadow:0 4px 24px #0002;">
+        <h3 style="color:#ffb347; margin-top:0; text-align:center; display:flex; align-items:center; justify-content:center;">TNT</h3>
+        <div style="display:flex; flex-direction:column; gap:1em; margin-bottom:1em;">
+          <div style="background:#23272f; border:2px solid #00c6ff; border-radius:16px; color:#ffb347; font-weight:600; padding:0.7em 1.2em; text-align:center; font-size:1em; box-shadow:0 2px 8px #0003;">Currently available<br>slots TNT
+            <div id="tnt-available" style="background:#181c22; color:#ffb347; border-radius:0 0 16px 16px; padding:0.7em 0; text-align:center; font-size:2.2em; font-weight:700; margin-top:0.3em;">0</div>
+          </div>
+          <div style="background:#23272f; border:2px solid #00c6ff; border-radius:16px; color:#ffb347; font-weight:600; padding:0.7em 1.2em; text-align:center; font-size:1em; box-shadow:0 2px 8px #0003;">Additional slots approved<br>by WFM
+            <div id="tnt-wfm-slots" style="background:#181c22; color:#ffb347; border-radius:0 0 16px 16px; padding:0.7em 0; text-align:center; font-size:1.5em; font-weight:700; margin-top:0.3em;">0</div>
+          </div>
+        </div>
+        <div style="background:#23272f; border:2px solid #00c6ff; border-radius:16px; box-shadow:0 2px 8px #0003; padding:1em; display:flex; justify-content:center;">
+          <table style="width:auto; margin:0 auto; border-collapse:separate; border-spacing:0; margin-bottom:1em; border-radius:16px; overflow:hidden;">
+            <thead>
+              <tr style="background:#23272f; color:#fff;">
+                <th style="padding:0.5em 1em; border-radius:16px 0 0 0; border:none;">Service</th>
+                <th style="padding:0.5em 1em; border-radius:0 16px 0 0; border:none;">TNT</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="background:#23272f; color:#fff; text-align:center;">
+                <td style="border:none; border-radius:12px 0 0 12px; text-align:center;">Slot 1</td>
+                <td style="background:#181c22; border:none; border-radius:0 12px 12px 0; text-align:center;"><input type="text" class="slot-input" data-col="tnt" data-slot="1" style="width:90%;border-radius:8px;border:none;padding:0.3em 0.5em;background:#23272f;color:#ffb347;font-weight:600;text-align:center;"></td>
+              </tr>
+              <tr style="background:#23272f; color:#fff; text-align:center;">
+                <td style="border:none; border-radius:12px 0 0 12px; text-align:center;">Slot 2</td>
+                <td style="background:#181c22; border:none; border-radius:0 12px 12px 0; text-align:center;"><input type="text" class="slot-input" data-col="tnt" data-slot="2" style="width:90%;border-radius:8px;border:none;padding:0.3em 0.5em;background:#23272f;color:#ffb347;font-weight:600;text-align:center;"></td>
+              </tr>
+              <tr style="background:#23272f; color:#fff; text-align:center;">
+                <td style="border:none; border-radius:12px 0 0 12px; text-align:center;">Slot 3</td>
+                <td style="background:#181c22; border:none; border-radius:0 12px 12px 0; text-align:center;"><input type="text" class="slot-input" data-col="tnt" data-slot="3" style="width:90%;border-radius:8px;border:none;padding:0.3em 0.5em;background:#23272f;color:#ffb347;font-weight:600;text-align:center;"></td>
+              </tr>
+              <tr style="background:#23272f; color:#fff; text-align:center;">
+                <td style="border:none; border-radius:12px 0 0 12px; text-align:center;">Slot 4</td>
+                <td style="background:#181c22; border:none; border-radius:0 12px 12px 0; text-align:center;"><input type="text" class="slot-input" data-col="tnt" data-slot="4" style="width:90%;border-radius:8px;border:none;padding:0.3em 0.5em;background:#23272f;color:#ffb347;font-weight:600;text-align:center;"></td>
+              </tr>
+              <tr style="background:#23272f; color:#fff; text-align:center;">
+                <td style="border:none; border-radius:12px 0 0 12px; text-align:center;">Slot 5</td>
+                <td style="background:#181c22; border:none; border-radius:0 12px 12px 0; text-align:center;"><input type="text" class="slot-input" data-col="tnt" data-slot="5" style="width:90%;border-radius:8px;border:none;padding:0.3em 0.5em;background:#23272f;color:#ffb347;font-weight:600;text-align:center;"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- FedEx Column -->
+      <div style="flex:1; min-width:340px; background:#23272f; border-radius:20px; padding:1.2em; box-shadow:0 4px 24px #0002;">
+  <h3 style="color:#6c2eb6; margin-top:0; text-align:center; display:flex; align-items:center; justify-content:center;">FedEx</h3>
+        <div style="display:flex; flex-direction:column; gap:1em; margin-bottom:1em;">
+          <div style="background:#23272f; border:2px solid #00c6ff; border-radius:16px; color:#6c2eb6; font-weight:600; padding:0.7em 1.2em; text-align:center; font-size:1em; box-shadow:0 2px 8px #0003;">Currently available<br>slots FedEx
+            <div id="fdx-available" style="background:#181c22; color:#6c2eb6; border-radius:0 0 16px 16px; padding:0.7em 0; text-align:center; font-size:2.2em; font-weight:700; margin-top:0.3em;">0</div>
+          </div>
+          <div style="background:#23272f; border:2px solid #00c6ff; border-radius:16px; color:#6c2eb6; font-weight:600; padding:0.7em 1.2em; text-align:center; font-size:1em; box-shadow:0 2px 8px #0003;">Additional slots approved<br>by WFM
+            <div id="fdx-wfm-slots" style="background:#181c22; color:#6c2eb6; border-radius:0 0 16px 16px; padding:0.7em 0; text-align:center; font-size:1.5em; font-weight:700; margin-top:0.3em;">0</div>
+          </div>
+        </div>
+        <div style="background:#23272f; border:2px solid #00c6ff; border-radius:16px; box-shadow:0 2px 8px #0003; padding:1em; display:flex; justify-content:center;">
+          <table style="width:auto; margin:0 auto; border-collapse:separate; border-spacing:0; margin-bottom:1em; border-radius:16px; overflow:hidden;">
+            <thead>
+              <tr style="background:#23272f; color:#fff;">
+                <th style="padding:0.5em 1em; border-radius:16px 0 0 0; border:none;">Service</th>
+                <th style="padding:0.5em 1em; border-radius:0 16px 0 0; border:none;">FedEx Dual</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="background:#23272f; color:#fff; text-align:center;">
+                <td style="border:none; border-radius:12px 0 0 12px; text-align:center;">Slot 1</td>
+                <td style="background:#181c22; border:none; border-radius:0 12px 12px 0; text-align:center;"><input type="text" class="slot-input" data-col="fdx" data-slot="1" style="width:90%;border-radius:8px;border:none;padding:0.3em 0.5em;background:#23272f;color:#6c2eb6;font-weight:600;text-align:center;" value="predel"></td>
+              </tr>
+              <tr style="background:#23272f; color:#fff; text-align:center;">
+                <td style="border:none; border-radius:12px 0 0 12px; text-align:center;">Slot 2</td>
+                <td style="background:#181c22; border:none; border-radius:0 12px 12px 0; text-align:center;"><input type="text" class="slot-input" data-col="fdx" data-slot="2" style="width:90%;border-radius:8px;border:none;padding:0.3em 0.5em;background:#23272f;color:#6c2eb6;font-weight:600;text-align:center;"></td>
+              </tr>
+              <tr style="background:#23272f; color:#fff; text-align:center;">
+                <td style="border:none; border-radius:12px 0 0 12px; text-align:center;">Slot 3</td>
+                <td style="background:#181c22; border:none; border-radius:0 12px 12px 0; text-align:center;"><input type="text" class="slot-input" data-col="fdx" data-slot="3" style="width:90%;border-radius:8px;border:none;padding:0.3em 0.5em;background:#23272f;color:#6c2eb6;font-weight:600;text-align:center;"></td>
+              </tr>
+              <tr style="background:#23272f; color:#fff; text-align:center;">
+                <td style="border:none; border-radius:12px 0 0 12px; text-align:center;">Slot 4</td>
+                <td style="background:#181c22; border:none; border-radius:0 12px 12px 0; text-align:center;"><input type="text" class="slot-input" data-col="fdx" data-slot="4" style="width:90%;border-radius:8px;border:none;padding:0.3em 0.5em;background:#23272f;color:#6c2eb6;font-weight:600;text-align:center;"></td>
+              </tr>
+              <tr style="background:#23272f; color:#fff; text-align:center;">
+                <td style="border:none; border-radius:12px 0 0 12px; text-align:center;">Slot 5</td>
+                <td style="background:#181c22; border:none; border-radius:0 12px 12px 0; text-align:center;"><input type="text" class="slot-input" data-col="fdx" data-slot="5" style="width:90%;border-radius:8px;border:none;padding:0.3em 0.5em;background:#23272f;color:#6c2eb6;font-weight:600;text-align:center;"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tab-content" id="content-chat" style="display:none">
+    <h2>Chat</h2>
+    <p>Content for Chat goes here.</p>
+  </div>
+  <script src="dist/index.js"></script>
+  <script>
+    const tabs = [
+      { btn: document.getElementById('tab-voice'), content: document.getElementById('content-voice') },
+      { btn: document.getElementById('tab-chat'), content: document.getElementById('content-chat') },
+    ];
+    tabs.forEach((tab, idx) => {
+      tab.btn.addEventListener('click', () => {
+        tabs.forEach((t, i) => {
+          t.btn.classList.toggle('active', i === idx);
+          t.content.style.display = i === idx ? '' : 'none';
+        });
+      });
+    });
+
+  // Secure password logic using hash stored in localStorage
+  async function hashPassword(pw) {
+    const enc = new TextEncoder();
+    const data = enc.encode(pw);
+    const hash = await window.crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  document.getElementById('admin-btn').onclick = function(e) {
+    e.preventDefault();
+    document.getElementById('admin-popup-bg').style.display = 'flex';
+    document.getElementById('admin-popup-password').value = '';
+    document.getElementById('admin-popup-error').style.display = 'none';
+    document.getElementById('admin-popup-password').focus();
+  };
+  document.getElementById('admin-popup-cancel').onclick = function() {
+    document.getElementById('admin-popup-bg').style.display = 'none';
+  };
+  async function tryAdminLogin() {
+    const input = document.getElementById('admin-popup-password').value;
+    const storedHash = localStorage.getItem('admin-password-hash');
+    if (!storedHash) {
+      document.getElementById('admin-popup-error').textContent = 'No admin password set.';
+      document.getElementById('admin-popup-error').style.display = 'block';
+      return;
+    }
+    const inputHash = await hashPassword(input);
+    if (inputHash === storedHash) {
+      window.location.href = 'admin.html';
+    } else {
+      document.getElementById('admin-popup-error').textContent = 'Incorrect password. Try again.';
+      document.getElementById('admin-popup-error').style.display = 'block';
+    }
+  }
+  document.getElementById('admin-popup-login').onclick = tryAdminLogin;
+  document.getElementById('admin-popup-password').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') tryAdminLogin();
+  });
+
+  // Dynamic available slots calculation
+    function getCurrentTimeSlotKey() {
+      // Returns the key for the current 30-min interval (e.g., '08:00', '08:30', ...)
+      const now = new Date();
+      let hour = now.getHours();
+      let min = now.getMinutes();
+      // Clamp to 08:00-17:30 (last slot)
+      if (hour < 8) hour = 8, min = 0;
+      if (hour >= 18) hour = 17, min = 30;
+      min = min < 30 ? 0 : 30;
+      return `${hour.toString().padStart(2,'0')}:${min.toString().padStart(2,'0')}`;
+    }
+
+    function updateAvailableSlots() {
+      let tntFilled = 0;
+      let fdxFilled = 0;
+      for (let i = 1; i <= 5; i++) {
+        const tntVal = document.querySelector(`input[data-col='tnt'][data-slot='${i}']`).value.trim();
+        if (tntVal) tntFilled++;
+        const fdxVal = document.querySelector(`input[data-col='fdx'][data-slot='${i}']`).value.trim();
+        if (fdxVal) fdxFilled++;
+      }
+      const slots = JSON.parse(localStorage.getItem('time-slots') || '{}');
+      const wfmSlots = JSON.parse(localStorage.getItem('wfm-slots') || '{}');
+      const currentKey = getCurrentTimeSlotKey();
+      const maxTnt = currentKey && slots[currentKey]?.tnt ? parseInt(slots[currentKey].tnt) : 0;
+      const maxFdx = currentKey && slots[currentKey]?.fdx ? parseInt(slots[currentKey].fdx) : 0;
+  let tntAvailable = !isNaN(maxTnt) ? Math.max(0, maxTnt - tntFilled) : 0;
+  let fdxAvailable = !isNaN(maxFdx) ? Math.max(0, maxFdx - fdxFilled) : 0;
+  // Add WFM slots to available
+  let tntWfm = parseInt(wfmSlots.tnt) || 0;
+  let fdxWfm = parseInt(wfmSlots.fdx) || 0;
+  document.getElementById('tnt-available').textContent = tntAvailable + tntWfm;
+  document.getElementById('fdx-available').textContent = fdxAvailable + fdxWfm;
+  // Update WFM slots display
+  document.getElementById('tnt-wfm-slots').textContent = wfmSlots.tnt ? wfmSlots.tnt : 0;
+  document.getElementById('fdx-wfm-slots').textContent = wfmSlots.fdx ? wfmSlots.fdx : 0;
+    }
+
+    // Auto-update available slots every 30 seconds in case time slot changes
+    setInterval(updateAvailableSlots, 30000);
+
+  // Dynamic Time CET slots table
+    function generateTimeIntervals(startHour, endHour, intervalMins) {
+      const intervals = [];
+      let current = new Date(0,0,0,startHour,0,0,0);
+      const end = new Date(0,0,0,endHour,0,0,0);
+      while (current < end) {
+        let next = new Date(current.getTime() + intervalMins*60000);
+        let label = current.toTimeString().slice(0,5) + ' - ' + next.toTimeString().slice(0,5);
+        intervals.push({
+          key: current.getHours().toString().padStart(2,'0') + ':' + current.getMinutes().toString().padStart(2,'0'),
+          label
+        });
+        current = next;
+      }
+      return intervals;
+    }
+
+    function groupIntervalsBySlots(intervals, slots, col) {
+      const groups = [];
+      let current = null;
+      intervals.forEach(({key, label}, idx) => {
+        const val = slots[key]?.[col] ?? '';
+  if (val === '' && !current) return;
+        if (!current) {
+          current = { start: key, end: key, val, startLabel: label.split(' - ')[0], endLabel: label.split(' - ')[1] };
+        } else if (val === current.val) {
+          current.end = key;
+          current.endLabel = label.split(' - ')[1];
+        } else {
+          groups.push({ ...current });
+          current = { start: key, end: key, val, startLabel: label.split(' - ')[0], endLabel: label.split(' - ')[1] };
+        }
+      });
+      if (current) groups.push({ ...current });
+      return groups.filter(g => g.val !== '');
+    }
+
+    function updateTimeSlotsTable() {
+      const slots = JSON.parse(localStorage.getItem('time-slots') || '{}');
+  const intervals = generateTimeIntervals(8, 18, 30);
+      const tntBody = document.getElementById('tnt-time-slots-body');
+      const fdxBody = document.getElementById('fdx-time-slots-body');
+      tntBody.innerHTML = '';
+      fdxBody.innerHTML = '';
+      const tntGroups = groupIntervalsBySlots(intervals, slots, 'tnt');
+      tntGroups.forEach(g => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td style=\"text-align:center;\">${g.startLabel} - ${g.endLabel}</td><td style=\"text-align:center;\">${g.val}</td>`;
+        tntBody.appendChild(row);
+      });
+      const fdxGroups = groupIntervalsBySlots(intervals, slots, 'fdx');
+      fdxGroups.forEach(g => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td style=\"text-align:center;\">${g.startLabel} - ${g.endLabel}</td><td style=\"text-align:center;\">${g.val}</td>`;
+        fdxBody.appendChild(row);
+      });
+    }
+
+    document.querySelectorAll('.slot-input').forEach(input => {
+      input.addEventListener('input', function(e) {
+        const col = input.getAttribute('data-col');
+        const slot = input.getAttribute('data-slot');
+        localStorage.setItem(`slot-${col}-${slot}`, input.value);
+        updateAvailableSlots();
+      });
+  // Show admin notes from admin page in the display box
+  function updateAdminNotesDisplay() {
+    const notes = localStorage.getItem('admin-notes') || '';
+    const box = document.getElementById('admin-notes-display');
+    if (box) box.textContent = notes.trim();
+  }
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'admin-notes') updateAdminNotesDisplay();
+  });
+  window.addEventListener('admin-notes-updated', updateAdminNotesDisplay);
+  document.addEventListener('DOMContentLoaded', updateAdminNotesDisplay);
+  updateAdminNotesDisplay();
+      const col = input.getAttribute('data-col');
+      const slot = input.getAttribute('data-slot');
+      const saved = localStorage.getItem(`slot-${col}-${slot}`);
+      if (saved !== null) input.value = saved;
+    });
+    window.addEventListener('storage', function(e) {
+      if (e.key && e.key.startsWith('slot-')) {
+        const match = e.key.match(/^slot-(tnt|fdx)-(\d)$/);
+        if (match) {
+          const col = match[1];
+          const slot = match[2];
+          const input = document.querySelector(`input[data-col='${col}'][data-slot='${slot}']`);
+          if (input) input.value = e.newValue || '';
+        }
+        updateAvailableSlots();
+      }
+      if (e.key === 'time-slots') {
+        updateTimeSlotsTable();
+        updateAvailableSlots();
+      }
+      if (e.key === 'wfm-slots') {
+        updateAvailableSlots();
+      }
+    });
+
+    // Also listen for same-tab storage event dispatch (from admin.html)
+    window.addEventListener('wfm-slots-updated', updateAvailableSlots);
+    updateTimeSlotsTable();
+    updateAvailableSlots();
+  </script>
+</body>
+</html>
